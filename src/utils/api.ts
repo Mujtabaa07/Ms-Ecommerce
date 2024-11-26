@@ -12,13 +12,12 @@ import type {
   ShippingAddress
 } from '../types';
 
-// API Base URL
-const API_URL = 'https://ms-ecommerce-production.up.railway.app';
+
 
 
 // Axios Instance
 const axiosInstance = axios.create({
-  baseURL: API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
