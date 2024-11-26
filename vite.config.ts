@@ -7,4 +7,13 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://ms-ecommerce-production.up.railway.app',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });
