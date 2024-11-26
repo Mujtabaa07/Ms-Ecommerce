@@ -22,5 +22,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📧 Contact
 
-Your Name - your.email@example.com
-Project Link: [https://github.com/yourusername/creative-stationery-store](https://github.com/yourusername/creative-stationery-store)
+Your Name - mohamedmujtaba07@gmail.com
+
