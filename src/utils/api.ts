@@ -178,8 +178,8 @@ export const auth = {
 
   register: async (userData: RegisterFormData) => {
     try {
-      const { data } = await axiosInstance.post('/api/auth/register', userData);
-      return data;
+      const response = await axiosInstance.post('/api/auth/register', userData);
+      return response.data;
     } catch (error) {
       console.error('Register error:', error);
       throw error;
