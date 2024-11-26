@@ -24,7 +24,7 @@ const envPath = process.env.NODE_ENV === 'test'
 dotenv.config({ path: envPath });
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 10000;
 
 // Middleware
 // Update the CORS configuration
@@ -62,6 +62,11 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
+// Add a health check endpoint
+app.get('/', (req, res) => {
+  res.send('Server is running!');
+});
+
 // Database connection
 const MONGODB_URI = process.env.NODE_ENV === 'test' 
   ? process.env.MONGODB_URI_TEST 
@@ -85,21 +90,15 @@ const connectDB = async () => {
 connectDB();
 
 // Server initialization
-let server;
 if (process.env.NODE_ENV !== 'test') {
-  server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-
-  // Handle unhandled promise rejections
-  process.on('unhandledRejection', (err) => {
-    console.error('Unhandled Promise Rejection:', err);
-    if (server) {
-      server.close(() => process.exit(1));
-    } else {
-      process.exit(1);
-    }
-  });
+  try {
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 }
 
-export { app, server };
+export { app };
