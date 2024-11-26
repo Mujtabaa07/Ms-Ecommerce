@@ -13,7 +13,9 @@ import type {
 } from '../types';
 
 // API Base URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://ms-ecommerce-production.up.railway.app'
+  : 'http://localhost:8000';
 
 // Axios Instance
 const axiosInstance: AxiosInstance = axios.create({
