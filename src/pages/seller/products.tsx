@@ -234,7 +234,7 @@ export const SellerProducts: React.FC = () => {
     setImagePreview('');
   };
 
-  const filteredProducts = products?.data?.filter((product) =>
+  const filteredProducts = products?.data?.filter((product: { name: string; category: string; }) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -276,7 +276,7 @@ export const SellerProducts: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {filteredProducts?.map((product) => (
+          {filteredProducts?.map((product: Product) => (
             <div key={product._id} className="bg-white rounded-lg shadow overflow-hidden">
               <Image
                 src={product.image}

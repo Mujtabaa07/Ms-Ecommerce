@@ -14,76 +14,63 @@ import {
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-export const apiConfig = {
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json'
-  }
-};
-
-// Create axios instance with default config
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: `${API_URL}/api`,  // Add /api prefix
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json'
   },
   withCredentials: true
 });
 
-// Add better error handling and logging
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('API Error:', {
-      status: error.response?.status,
-      message: error.response?.data?.message || error.message
-    });
-    return Promise.reject(error);
-  }
-);
-axiosInstance.interceptors.response.use(
-  (response) => {
-    console.log('✅ Response:', {
-      status: response.status,
-      data: response.data
-    });
-    return response;
+// Request interceptor
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
   },
   (error) => {
-    console.error('❌ Response Error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message
-    });
+    console.error('Request Error:', error);
     return Promise.reject(error);
   }
 );
 
-// Add auth token to requests
-axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// Response interceptor
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Response Error:', {
+      status: error.response?.status,
+      message: error.response?.data?.message || error.message
+    });
+    return Promise.reject({
+      message: error.response?.data?.message || 'An error occurred',
+      response: error.response
+    });
   }
-  return config;
-});
+);
 
 // Products API
 export const products = {
   getAll: async (params?: ProductFilters) => {
-    const { data } = await axiosInstance.get<{ data: Product[] }>('/products', { params });
-    return data;
+    try {
+      const { data } = await axiosInstance.get('/api/products', { params });
+      return data;
+    } catch (error) {
+      console.error('Get products error:', error);
+      throw error;
+    }
   },
 
-  getById: async (id: string) => {
-    const { data } = await axiosInstance.get<{ data: Product }>(`/products/${id}`);
+  getOne: async (id: string) => {
+    const { data } = await axiosInstance.get(`/api/products/${id}`);
     return data;
   },
 
   create: async (formData: FormData) => {
-    const { data } = await axiosInstance.post<{ data: Product }>('/seller/products', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const { data } = await axiosInstance.post('/api/products', formData);
     return data;
   },
 
@@ -168,36 +155,24 @@ export const orders = {
 export const auth = {
   login: async (credentials: LoginFormData) => {
     try {
-      const response = await axiosInstance.post('/auth/login', credentials);
+      const response = await axiosInstance.post('/api/auth/login', credentials);
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw {
-          message: error.response?.data?.message || 'Login failed',
-          response: error.response
-        };
-      }
+      console.error('Login error:', error);
       throw error;
     }
   },
 
   register: async (userData: RegisterFormData) => {
-    try {
-      const response = await axiosInstance.post('/auth/register', userData);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw {
-          message: error.response?.data?.message || 'Registration failed',
-          response: error.response
-        };
-      }
-      throw error;
-    }
+    const response = await axiosInstance.post('/api/auth/register', userData);
+    return response.data;
   },
 
   getProfile: async () => {
-    const { data } = await axiosInstance.get('/auth/profile');
+    const { data } = await axiosInstance.get('/api/auth/profile');
     return data;
   },
 

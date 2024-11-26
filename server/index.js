@@ -19,25 +19,36 @@ const __dirname = path.dirname(__filename);
 const envPath = process.env.NODE_ENV === 'test' 
   ? path.join(__dirname, 'config', '.env.test')
   : path.join(__dirname, 'config', '.env');
+  
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'https://ms-ecommerce-sigma.vercel.app'
+  ];
 
 // Load environment variables
 dotenv.config({ path: envPath });
-
 const app = express();
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error('CORS not allowed'));
+    }
+    return callback(null, true);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
 // Update the CORS configuration
-app.use(cors({
-  origin: [
-    'https://ms-ecommerce-sigma.vercel.app',  // Your Vercel frontend URL
-    'http://localhost:5173',                   // Local development
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+
 app.get('/', (req, res) => {
   res.send('Server is running!');
 });
