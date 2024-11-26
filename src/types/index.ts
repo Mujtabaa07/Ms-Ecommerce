@@ -1,10 +1,14 @@
+import { Key } from "react";
+
 // Product related interfaces
 export interface Product {
+  rating: any;
   _id: string;
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
+  image: string;
+  
   category: string;
   stock: number;
   seller: {
@@ -46,6 +50,7 @@ export interface ShippingAddress {
 
 // Order related interfaces
 export interface OrderItem {
+  _id: Key | null | undefined;
   product: Product;
   quantity: number;
   price: number;

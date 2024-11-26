@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { ShoppingCart } from 'lucide-react';
 
 interface Product {
+  image: string;
   _id: string;
   name: string;
   description: string;
@@ -14,10 +15,14 @@ interface Product {
   category: string;
   imageUrl: string;
   stock: number;
+  rating: number;
   seller: {
     _id: string;
     name: string;
   };
+  quantity?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const ProductDetail: React.FC = () => {
@@ -36,14 +41,8 @@ export const ProductDetail: React.FC = () => {
   });
   const handleAddToCart = () => {
     if (product?.data) {
-      const productToAdd = {
-        ...product.data,
-        quantity: quantity, // Add the selected quantity
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
       const cartProduct = {
-        ...productToAdd,
+        ...product.data,
         quantity: quantity
       };
       addToCart(cartProduct);
@@ -82,15 +81,15 @@ export const ProductDetail: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
-          <img
-            src={product.data.imageUrl}
-            alt={product.data.name}
-            className="w-full h-96 object-cover rounded-lg"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = '/placeholder-image.jpg';
-            }}
-          />
+        <img
+  src={product.data.image}  // Changed from imageUrl to image
+  alt={product.data.name}
+  className="w-full h-96 object-cover rounded-lg"
+  onError={(e) => {
+    const target = e.target as HTMLImageElement;
+    target.src = '/placeholder-image.jpg';
+  }}
+/>
         </div>
 
         <div>

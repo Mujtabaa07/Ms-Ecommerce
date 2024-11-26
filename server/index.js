@@ -9,6 +9,7 @@ import fs from 'fs'; // Add this import
 import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import orderRoutes from './routes/orders.js';
+import sellerRoutes from './routes/seller.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,7 +27,14 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 // Middleware
-app.use(cors());
+// Update the CORS configuration
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Authorization']
+}));
 app.use(express.json());
 
 // Ensure uploads directory exists
@@ -42,9 +50,20 @@ app.use('/uploads', express.static(uploadsDir));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/seller', sellerRoutes);
 
 // Error handling middleware should be last
 app.use(errorHandler);
+
+// Add error logging middleware
+app.use((err, req, res, next) => {
+  console.error('Server Error:', {
+    path: req.path,
+    method: req.method,
+    error: err.message
+  });
+  next(err);
+});
 
 // Database connection
 const MONGODB_URI = process.env.NODE_ENV === 'test' 

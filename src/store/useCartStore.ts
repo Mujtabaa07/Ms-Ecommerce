@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CartItem, Product } from '../types';
-import { orders } from '../utils/api';
 import { toast } from 'react-hot-toast';
+import api from '../utils/api';
 
 interface ShippingAddress {
   fullName: string;
@@ -111,7 +111,7 @@ export const useCartStore = create<CartState>()(
 
       checkout: async (shippingAddress: ShippingAddress) => {
         try {
-          const { items, total } = get();
+          const { items } = get();
           
           // Validate cart is not empty
           if (items.length === 0) {
@@ -130,20 +130,33 @@ export const useCartStore = create<CartState>()(
           // Prepare order data
           const orderData = {
             items: items.map(item => ({
-              product: item.productId,
+              _id: '',
+              product: {
+                _id: item.productId,
+                name: item.product.name,
+                image: item.product.image,
+                price: item.product.price,
+                description: item.product.description,
+                category: item.product.category,
+                stock: item.product.stock,
+                rating: item.product.rating,
+                seller: {
+                  _id: item.product.seller._id,
+                  name: item.product.seller.name
+                },
+                createdAt: item.product.createdAt,
+                updatedAt: item.product.updatedAt
+              },
               quantity: item.quantity,
               price: item.product.price
             })),
-            totalAmount: total,
             shippingAddress,
-            paymentMethod: 'COD' // Cash on Delivery
+            paymentMethod: 'COD' as const
           };
           // Create order
-          await orders.create({
+          await api.orders.create({
             items: orderData.items,
-            totalAmount: orderData.totalAmount,
-            shippingAddress: orderData.shippingAddress,
-            paymentMethod: 'COD' as const
+            shippingAddress: orderData.shippingAddress
           });
           
           // Clear cart after successful order

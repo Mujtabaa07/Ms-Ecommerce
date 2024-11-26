@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useAuthStore } from '../store/useAuthStore';
+import { toast } from 'react-hot-toast';
+import  api  from '../utils/api';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { register, error } = useAuthStore();
+  const {  error } = useAuthStore();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -25,30 +27,45 @@ export const Register: React.FC = () => {
     e.preventDefault();
     setServerError(null);
 
+    // Validate form data
+    if (!formData.name.trim()) {
+      setServerError('Name is required');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setServerError('Please enter a valid email address');
+      return;
+    }
+
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setServerError('Passwords do not match');
       return;
     }
 
-    // Validate password length
-    if (formData.password.length < 6) {
-      setServerError('Password must be at least 6 characters long');
-      return;
-    }
-
     setIsLoading(true);
     try {
-      await register({
-        ...formData,
+      const response = await api.auth.register({
+        name: formData.name.trim(),
+        email: formData.email.toLowerCase().trim(),
+        password: formData.password,
         role: formData.role as "customer" | "seller"
       });
-      navigate('/');
+
+      if (response.success && response.data) {
+        useAuthStore.getState().login({ 
+          token: response.data.token,
+          user: response.data.user 
+        });
+        toast.success('Registration successful');
+        navigate('/');
+      }
     } catch (err: any) {
-      setServerError(
-        err.response?.data?.message ||
-        'Registration failed. Please try again.'
-      );
+      const errorMessage = err.response?.data?.message || err.message || 'Registration failed';
+      setServerError(errorMessage);
     } finally {
       setIsLoading(false);
     }

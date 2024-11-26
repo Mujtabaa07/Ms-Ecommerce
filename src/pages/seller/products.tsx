@@ -13,9 +13,12 @@ interface Product {
   description: string;
   price: number;
   category: string;
-  imageUrl: string;
+  image: string;
   stock: number;
-  seller: string;
+  seller: {
+    _id: string;
+    name: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -66,15 +69,15 @@ export const SellerProducts: React.FC = () => {
   const { data: products, isLoading } = useQuery({
     queryKey: ['sellerProducts'],
     queryFn: async () => {
-      const response = await api.get('/seller/products');
-      return response.data;
+      const response = await api.products.getAll();
+      return response;
     }
   });
 
   // Create product mutation
   const createProductMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await fetch('http://localhost:8000/api/seller/products', {
+      const response = await fetch('http://localhost:8000/api/products', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -176,7 +179,7 @@ export const SellerProducts: React.FC = () => {
       category: product.category,
       stock: product.stock
     });
-    setImagePreview(product.imageUrl);
+    setImagePreview(product.image);
     setIsModalOpen(true);
   };
 
@@ -199,7 +202,7 @@ export const SellerProducts: React.FC = () => {
     setImagePreview('');
   };
 
-  const filteredProducts = products?.data.filter((product: Product) =>
+  const filteredProducts = products?.data?.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -241,10 +244,10 @@ export const SellerProducts: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {filteredProducts?.map((product: Product) => (
+          {filteredProducts?.map((product) => (
             <div key={product._id} className="bg-white rounded-lg shadow overflow-hidden">
               <img
-                src={product.imageUrl}
+                src={product.image || '/placeholder-image.jpg'}
                 alt={product.name}
                 className="w-full h-48 object-cover"
                 onError={(e) => {

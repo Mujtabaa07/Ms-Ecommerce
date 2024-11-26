@@ -1,14 +1,66 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
+import { 
+  Product,
+  LoginFormData, 
+  RegisterFormData,
+  ProfileUpdateData,
+  PasswordChangeData,
+  ProductFilters,
+  DashboardStats,
+  Order,
+  OrderItem,
+  ShippingAddress
+} from '../types';
 
-const api = axios.create({
+// Create axios instance with default config
+const axiosInstance: AxiosInstance = axios.create({
   baseURL: 'http://localhost:8000/api',
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   },
+  withCredentials: true
 });
 
-// Add token to requests if it exists
-api.interceptors.request.use((config) => {
+// Add better error handling and logging
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    console.log('🚀 Request:', {
+      method: config.method,
+      url: config.url,
+      data: config.data
+    });
+    return config;
+  },
+  (error) => {
+    console.error('❌ Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+axiosInstance.interceptors.response.use(
+  (response) => {
+    console.log('✅ Response:', {
+      status: response.status,
+      data: response.data
+    });
+    return response;
+  },
+  (error) => {
+    console.error('❌ Response Error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    return Promise.reject(error);
+  }
+);
+
+// Add auth token to requests
+axiosInstance.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -16,200 +68,157 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Products API
 export const products = {
-  // Get all products with filters
-  getAll: async (params?: {
-    category?: string;
-    search?: string;
-    sort?: string;
-    minPrice?: number;
-    maxPrice?: number;
-  }) => {
-    const { data } = await api.get('/products', { params });
+  getAll: async (params?: ProductFilters) => {
+    const { data } = await axiosInstance.get<{ data: Product[] }>('/products', { params });
     return data;
   },
 
-  // Get single product
   getById: async (id: string) => {
-    const { data } = await api.get(`/products/${id}`);
+    const { data } = await axiosInstance.get<{ data: Product }>(`/products/${id}`);
     return data;
   },
 
-  // Create new product (for sellers)
   create: async (formData: FormData) => {
-    const { data } = await api.post('/products', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    const { data } = await axiosInstance.post<{ data: Product }>('/seller/products', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data;
   },
 
-  // Update product (for sellers)
   update: async (id: string, formData: FormData) => {
-    const { data } = await api.put(`/products/${id}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    const { data } = await axiosInstance.put<{ data: Product }>(`/seller/products/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data;
   },
 
-  // Delete product (for sellers)
   delete: async (id: string) => {
-    const { data } = await api.delete(`/products/${id}`);
+    const { data } = await axiosInstance.delete<{ success: boolean }>(`/seller/products/${id}`);
     return data;
   },
 
-  // Search products
-  search: async (params: {
-    query?: string;
-    category?: string;
-    minPrice?: number;
-    maxPrice?: number;
-    sort?: string;
-  }) => {
-    const { data } = await api.get('/products/search', { params });
+  search: async (params: ProductFilters) => {
+    const { data } = await axiosInstance.get<{ data: Product[] }>('/products/search', { params });
     return data;
   },
 };
 
+// Seller API
 export const seller = {
-  // Get seller's products
   getProducts: async () => {
-    const { data } = await api.get('/seller/products');
+    const { data } = await axiosInstance.get<{ data: Product[] }>('/seller/products');
     return data;
   },
 
-  // Get seller's dashboard stats
-  getDashboardStats: async () => {
-    const { data } = await api.get('/seller/dashboard');
-    return data;
+  getDashboard: async () => {
+    const response = await axiosInstance.get<{ data: DashboardStats }>('/seller/dashboard');
+    return response.data.data;
   },
 
-  // Get seller's orders
   getOrders: async () => {
-    const { data } = await api.get('/seller/orders');
-    return data;
-  },
-};
-
-export const orders = {
-  // Create new order
-  create: async (orderData: {
-    items: Array<{
-      product: string;
-      quantity: number;
-      price: number;
-    }>;
-    totalAmount: number;
-    shippingAddress: {
-      fullName: string;
-      phoneNumber: string;
-      street: string;
-      city: string;
-      state: string;
-      pinCode: string;
-    };
-    paymentMethod: 'COD';
-  }) => {
-    const { data } = await api.post('/orders', orderData);
-    return data;
+    const response = await axiosInstance.get<{ data: Order[] }>('/seller/orders');
+    return response.data;
   },
 
-  // Get all orders (for customer/seller)
-  getAll: async () => {
-    const { data } = await api.get('/orders');
-    return data;
-  },
-
-  // Get single order
-  getById: async (id: string) => {
-    const { data } = await api.get(`/orders/${id}`);
-    return data;
-  },
-
-  // Update order status (for sellers)
-  updateStatus: async (
-    id: string, 
-    status: 'processing' | 'shipped' | 'delivered' | 'cancelled'
-  ) => {
-    const { data } = await api.patch(`/orders/${id}/status`, { status });
-    return data;
-  },
-
-  // Cancel order (for customers)
-  cancel: async (id: string) => {
-    const { data } = await api.post(`/orders/${id}/cancel`);
-    return data;
-  },
-};
-
-export const auth = {
-  // Login
-  login: async (credentials: { email: string; password: string }) => {
-    const { data } = await api.post('/auth/login', credentials);
-    return data;
-  },
-
-  // Register
-  register: async (userData: {
-    name: string;
-    email: string;
-    password: string;
-    role: 'customer' | 'seller';
-  }) => {
-    const { data } = await api.post('/auth/register', userData);
-    return data;
-  },
-
-  // Get user profile
-  getProfile: async () => {
-    const { data } = await api.get('/auth/profile');
-    return data;
-  },
-
-  // Update profile
-  updateProfile: async (profileData: {
-    name?: string;
-    phoneNumber?: string;
-    address?: {
-      street: string;
-      city: string;
-      state: string;
-      pinCode: string;
-    };
-  }) => {
-    const { data } = await api.put('/auth/profile', profileData);
-    return data;
-  },
-
-  // Change password
-  changePassword: async (passwordData: {
-    currentPassword: string;
-    newPassword: string;
-  }) => {
-    const { data } = await api.put('/auth/change-password', passwordData);
-    return data;
-  },
-};
-
-// Error interceptor
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
+  updateOrderStatus: async (orderId: string, status: Order['status']) => {
+    const response = await axiosInstance.patch<{ data: Order }>(`/seller/orders/${orderId}/status`, { status });
+    return response.data;
   }
-);
+};
 
-export default {
-  ...api,
+// Orders API
+export const orders = {
+  create: async (orderData: { items: OrderItem[], shippingAddress: ShippingAddress }) => {
+    const response = await axiosInstance.post<{ data: Order }>('/orders', orderData);
+    return response.data;
+  },
+
+  getAll: async () => {
+    const response = await axiosInstance.get<{ data: Order[] }>('/orders');
+    return response.data;
+  },
+
+  getById: async (id: string) => {
+    const response = await axiosInstance.get<{ data: Order }>(`/orders/${id}`);
+    return response.data;
+  },
+
+  cancel: async (orderId: string) => {
+    const response = await axiosInstance.post<{ success: boolean }>(`/orders/${orderId}/cancel`);
+    return response.data;
+  },
+
+  getSellerOrders: async () => {
+    const response = await axiosInstance.get<{ data: Order[] }>('/seller/orders');
+    return response.data;
+  },
+
+  updateOrderStatus: async (orderId: string, status: Order['status']) => {
+    const response = await axiosInstance.patch<{ data: Order }>(
+      `/seller/orders/${orderId}/status`,
+      { status }
+    );
+    return response.data;
+  }
+};
+
+// Auth API
+export const auth = {
+  login: async (credentials: LoginFormData) => {
+    try {
+      const response = await axiosInstance.post('/auth/login', credentials);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw {
+          message: error.response?.data?.message || 'Login failed',
+          response: error.response
+        };
+      }
+      throw error;
+    }
+  },
+
+  register: async (userData: RegisterFormData) => {
+    try {
+      const response = await axiosInstance.post('/auth/register', userData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw {
+          message: error.response?.data?.message || 'Registration failed',
+          response: error.response
+        };
+      }
+      throw error;
+    }
+  },
+
+  getProfile: async () => {
+    const { data } = await axiosInstance.get('/auth/profile');
+    return data;
+  },
+
+  updateProfile: async (profileData: ProfileUpdateData) => {
+    const { data } = await axiosInstance.put('/auth/profile', profileData);
+    return data;
+  },
+
+  changePassword: async (passwordData: PasswordChangeData) => {
+    const { data } = await axiosInstance.put('/auth/change-password', passwordData);
+    return data;
+  },
+};
+
+// Export default API object
+const api = {
+  axiosInstance,
   products,
   orders,
   seller,
   auth,
 };
+
+export default api;

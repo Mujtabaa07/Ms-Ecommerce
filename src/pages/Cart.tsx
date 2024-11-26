@@ -59,7 +59,7 @@ export const Cart: React.FC = () => {
             >
               {/* Product Image */}
               <img
-                src={item.product.imageUrl}
+                src={item.product.image}
                 alt={item.product.name}
                 className="w-24 h-24 object-cover rounded"
                 onError={(e) => {

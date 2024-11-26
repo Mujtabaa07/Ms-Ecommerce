@@ -14,13 +14,14 @@ import {
   XCircle,
   Clock
 } from 'lucide-react';
+import api from '../../utils/api';
 
 interface OrderItem {
-  _id: string;
+  _id: string | number | null | undefined;
   product: {
     _id: string;
     name: string;
-    imageUrl: string;
+    image: string;
     price: number;
   };
   quantity: number;
@@ -28,11 +29,12 @@ interface OrderItem {
 }
 
 interface Order {
-  _id: string;
+    _id: string | number | bigint | null | undefined; 
   user: {
     _id: string;
     name: string;
     email: string;
+    
   };
   items: OrderItem[];
   totalAmount: number;
@@ -43,6 +45,7 @@ interface Order {
     city: string;
     state: string;
     pinCode: string;
+    imageUrl: string;
   };
   paymentMethod: 'COD';
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
@@ -50,7 +53,7 @@ interface Order {
   updatedAt: string;
 }
 
-const ORDER_STATUSES = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+const ORDER_STATUSES = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
 
 export const SellerOrders: React.FC = () => {
   const navigate = useNavigate();
@@ -68,31 +71,13 @@ export const SellerOrders: React.FC = () => {
   // Fetch orders
   const { data: orders, isLoading } = useQuery({
     queryKey: ['sellerOrders'],
-    queryFn: async () => {
-      const response = await fetch('http://localhost:8000/api/seller/orders', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch orders');
-      return response.json();
-    }
+    queryFn: () => api.orders.getSellerOrders()
   });
 
   // Update order status mutation
   const updateOrderStatusMutation = useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      const response = await fetch(`http://localhost:8000/api/seller/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status })
-      });
-      if (!response.ok) throw new Error('Failed to update order status');
-      return response.json();
-    },
+    mutationFn: ({ orderId, status }: { orderId: string; status: Order['status'] }) => 
+      api.orders.updateOrderStatus(orderId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sellerOrders'] });
       toast.success('Order status updated successfully');
@@ -102,9 +87,12 @@ export const SellerOrders: React.FC = () => {
     }
   });
 
-  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+  const handleStatusUpdate = async (orderId: string, newStatus: Order['status']) => {
     if (window.confirm(`Are you sure you want to mark this order as ${newStatus}?`)) {
-      updateOrderStatusMutation.mutate({ orderId, status: newStatus });
+      updateOrderStatusMutation.mutate({ 
+        orderId, 
+        status: newStatus as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+      });
     }
   };
 
@@ -138,9 +126,9 @@ export const SellerOrders: React.FC = () => {
     }
   };
 
-  const filteredOrders = orders?.data.filter((order: Order) => {
+  const filteredOrders = orders?.data.filter((order) => {
     const matchesSearch = 
-      order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ((order._id?.toString() || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
       order.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.shippingAddress.fullName.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -195,7 +183,7 @@ export const SellerOrders: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredOrders?.map((order: Order) => (
+          {filteredOrders?.map((order) => (
             <div key={order._id} className="bg-white rounded-lg shadow overflow-hidden">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
@@ -219,7 +207,7 @@ export const SellerOrders: React.FC = () => {
                   {order.items.map((item) => (
                     <div key={item._id} className="flex items-center space-x-4 py-2">
                       <img
-                        src={item.product.imageUrl}
+                        src={item.product.image}
                         alt={item.product.name}
                         className="w-16 h-16 object-cover rounded"
                         onError={(e) => {
@@ -261,7 +249,7 @@ export const SellerOrders: React.FC = () => {
 
                 <div className="mt-4 flex justify-between items-center">
                   <div className="text-lg font-semibold">
-                    Total: ₹{order.totalAmount.toFixed(2)}
+                    Total: ₹{(order.totalAmount || 0).toFixed(2)}
                   </div>
                   
                   {order.status !== 'delivered' && order.status !== 'cancelled' && (

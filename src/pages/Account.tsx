@@ -14,6 +14,8 @@ interface ProfileFormData {
     city: string;
     state: string;
     pinCode: string;
+    fullName: string;
+    phoneNumber: string;
   };
 }
 
@@ -38,7 +40,9 @@ export const Account: React.FC = () => {
       street: user?.address?.street || '',
       city: user?.address?.city || '',
       state: user?.address?.state || '',
-      pinCode: user?.address?.pinCode || ''
+      pinCode: user?.address?.pinCode || '',
+      fullName: user?.name || '',
+      phoneNumber: user?.phoneNumber || ''
     }
   });
 
@@ -82,7 +86,11 @@ export const Account: React.FC = () => {
       await updateProfile({
         name: profileData.name,
         phoneNumber: profileData.phoneNumber,
-        address: profileData.address
+        address: {
+          ...profileData.address,
+          fullName: profileData.name,
+          phoneNumber: profileData.phoneNumber
+        }
       });
       setIsEditing(false);
       toast.success('Profile updated successfully');

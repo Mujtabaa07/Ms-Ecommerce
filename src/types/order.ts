@@ -5,6 +5,7 @@ export interface OrderItem {
       _id: string;
       name: string;
       imageUrl: string;
+      
       price: number;
     };
     quantity: number;
@@ -22,7 +23,11 @@ export interface OrderItem {
   
   export interface Order {
     _id: string;
-    user: string;
+    user: {
+      _id: string;
+      name: string;
+      email: string;
+    };
     items: OrderItem[];
     totalAmount: number;
     shippingAddress: ShippingAddress;
@@ -30,4 +35,14 @@ export interface OrderItem {
     status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
     createdAt: string;
     updatedAt: string;
+  }
+  
+  export interface DashboardData {
+    stats: {
+      totalOrders: number;
+      totalRevenue: number;
+      pendingOrders: number;
+      processingOrders: number;
+    };
+    recentOrders: Order[];
   }

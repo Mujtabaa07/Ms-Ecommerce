@@ -40,15 +40,17 @@ export const Checkout: React.FC = () => {
     mutationFn: async () => {
       const orderData = {
         items: items.map(item => ({
-          product: item.productId,
+          product: item.product._id,
           quantity: item.quantity,
           price: item.product.price
         })),
         totalAmount: total,
         shippingAddress: address,
-        paymentMethod: 'COD' as const // Cash on Delivery
+        paymentMethod: 'COD'
       };
-      return orders.post('/orders', orderData);
+
+      const response = await orders.axiosInstance.post('/orders', orderData);
+      return response.data;
     },
     onSuccess: () => {
       clearCart();

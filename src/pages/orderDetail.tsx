@@ -1,59 +1,30 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import orders from '../utils/api';
+import api from '../utils/api';
 import { Button } from '../components/ui/Button';
 import { format } from 'date-fns';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '../store/useAuthStore';
+import { Order as OrderType } from '../types';
 
-interface OrderItem {
-  _id: string;
-  product: {
-    _id: string;
-    name: string;
-    imageUrl: string;
-    price: number;
-  };
-  quantity: number;
-  price: number;
-}
-
-interface Order {
-  _id: string;
-  user: string;
-  items: OrderItem[];
-  totalAmount: number;
-  shippingAddress: {
-    fullName: string;
-    phoneNumber: string;
-    street: string;
-    city: string;
-    state: string;
-    pinCode: string;
-  };
-  paymentMethod: 'COD';
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  createdAt: string;
-  updatedAt: string;
-}
 
 export const OrderDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id = '' } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
   // Fetch order details
   const { data: response, isLoading, error, refetch } = useQuery({
     queryKey: ['order', id],
-    queryFn: () => orders.orders.get(id),
+    queryFn: () => api.orders.getById(id),
     enabled: !!id,
   });
 
   // Cancel order mutation
   const cancelOrderMutation = useMutation({
-    mutationFn: () => orders.post(`/orders/${id}/cancel`),
+    mutationFn: () => api.orders.cancel(id),
     onSuccess: () => {
       toast.success('Order cancelled successfully');
       refetch();
@@ -69,7 +40,7 @@ export const OrderDetail: React.FC = () => {
     }
   };
 
-  const getStatusBadgeStyles = (status: Order['status']) => {
+  const getStatusBadgeStyles = (status: OrderType['status']) => {
     switch (status) {
       case 'delivered':
         return 'bg-green-100 text-green-800';
@@ -105,7 +76,7 @@ export const OrderDetail: React.FC = () => {
     );
   }
 
-  const order: Order = response.data;
+  const order: OrderType = response.data;
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -143,7 +114,7 @@ export const OrderDetail: React.FC = () => {
               <div key={item._id} className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <img
-                    src={item.product.imageUrl}
+                    src={item.product.image}
                     alt={item.product.name}
                     className="w-20 h-20 object-cover rounded"
                     onError={(e) => {

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { auth } from '../utils/api';
 import { toast } from 'react-hot-toast';
 
+// Types
 interface User {
   _id: string;
   name: string;
@@ -19,22 +20,35 @@ interface User {
   updatedAt: string;
 }
 
-interface LoginData {
-  email: string;
-  password: string;
+interface AuthState {
+  token: string | null;
+  user: User | null;
+  
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  login: (payload: LoginPayload) => void;
+  register: (userData: RegisterFormData) => Promise<void>;
+  logout: () => void;
+  loadUser: () => Promise<void>;
+  updateProfile: (profileData: ProfileUpdateData) => Promise<void>;
+  changePassword: (passwordData: PasswordChangeData) => Promise<void>;
+  clearError: () => void;
 }
 
-interface RegisterData {
+interface RegisterFormData {
   name: string;
   email: string;
   password: string;
   role: 'customer' | 'seller';
 }
 
-interface UpdateProfileData {
+interface ProfileUpdateData {
   name?: string;
   phoneNumber?: string;
   address?: {
+    fullName: string;
+    phoneNumber: string;
     street: string;
     city: string;
     state: string;
@@ -42,76 +56,74 @@ interface UpdateProfileData {
   };
 }
 
-interface ChangePasswordData {
+interface PasswordChangeData {
   currentPassword: string;
   newPassword: string;
 }
 
-interface AuthState {
-  token: string | null;
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  login: (credentials: LoginData) => Promise<void>;
-  register: (userData: RegisterData) => Promise<void>;
-  logout: () => void;
-  loadUser: () => Promise<void>;
-  updateProfile: (profileData: UpdateProfileData) => Promise<void>;
-  changePassword: (passwordData: ChangePasswordData) => Promise<void>;
-  clearError: () => void;
+interface LoginPayload {
+  token: string;
+  user: any;
 }
 
+// Store
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
+      // Initial state
       token: null,
       user: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
 
-      login: async (credentials: LoginData) => {
+      // Auth methods
+      login: (payload: LoginPayload) => {
         try {
-          set({ isLoading: true, error: null });
-          const { data } = await auth.login(credentials);
-          localStorage.setItem('token', data.token);
+          if (!payload.token || !payload.user) {
+            throw new Error('Invalid login payload');
+          }
+
+          localStorage.setItem('token', payload.token);
           set({ 
-            token: data.token,
-            user: data.user,
+            token: payload.token,
+            user: payload.user,
             isAuthenticated: true,
-            isLoading: false 
+            isLoading: false,
+            error: null
           });
-          toast.success('Logged in successfully');
+          toast.success('Login successful');
         } catch (error: any) {
-          const errorMessage = error.response?.data?.message || 'Login failed';
           set({ 
-            error: errorMessage,
+            error: error.message,
             isLoading: false 
           });
-          toast.error(errorMessage);
+          toast.error(error.message);
           throw error;
         }
       },
 
-      register: async (userData: RegisterData) => {
+      register: async (userData: RegisterFormData) => {
         try {
           set({ isLoading: true, error: null });
-          const { data } = await auth.register(userData);
-          localStorage.setItem('token', data.token);
-          set({ 
-            token: data.token,
-            user: data.user,
-            isAuthenticated: true,
-            isLoading: false 
-          });
-          toast.success('Registration successful');
+          const response = await auth.register(userData);
+          
+          if (response.success && response.data) {
+            const { token, user } = response.data;
+            localStorage.setItem('token', token);
+            set({ 
+              token,
+              user,
+              isAuthenticated: true,
+              isLoading: false 
+            });
+            toast.success('Registration successful');
+          } else {
+            throw new Error('Invalid response from server');
+          }
         } catch (error: any) {
           const errorMessage = error.response?.data?.message || 'Registration failed';
-          set({ 
-            error: errorMessage,
-            isLoading: false 
-          });
+          set({ error: errorMessage, isLoading: false });
           toast.error(errorMessage);
           throw error;
         }
@@ -138,6 +150,11 @@ export const useAuthStore = create<AuthState>()(
 
           set({ isLoading: true, error: null });
           const { data } = await auth.getProfile();
+          
+          if (!data.user) {
+            throw new Error('Invalid response from server');
+          }
+
           set({ 
             user: data.user,
             isAuthenticated: true,
@@ -155,10 +172,15 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      updateProfile: async (profileData: UpdateProfileData) => {
+      updateProfile: async (profileData: ProfileUpdateData) => {
         try {
           set({ isLoading: true, error: null });
           const { data } = await auth.updateProfile(profileData);
+          
+          if (!data.user) {
+            throw new Error('Invalid response from server');
+          }
+
           set({ 
             user: data.user,
             isLoading: false 
@@ -166,16 +188,13 @@ export const useAuthStore = create<AuthState>()(
           toast.success('Profile updated successfully');
         } catch (error: any) {
           const errorMessage = error.response?.data?.message || 'Profile update failed';
-          set({ 
-            error: errorMessage,
-            isLoading: false 
-          });
+          set({ error: errorMessage, isLoading: false });
           toast.error(errorMessage);
           throw error;
         }
       },
 
-      changePassword: async (passwordData: ChangePasswordData) => {
+      changePassword: async (passwordData: PasswordChangeData) => {
         try {
           set({ isLoading: true, error: null });
           await auth.changePassword(passwordData);
@@ -183,10 +202,7 @@ export const useAuthStore = create<AuthState>()(
           toast.success('Password changed successfully');
         } catch (error: any) {
           const errorMessage = error.response?.data?.message || 'Password change failed';
-          set({ 
-            error: errorMessage,
-            isLoading: false 
-          });
+          set({ error: errorMessage, isLoading: false });
           toast.error(errorMessage);
           throw error;
         }
