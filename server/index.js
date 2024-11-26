@@ -28,14 +28,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-  origin: [
-    'https://ms-ecommerce-git-main-mujtabaa07s-projects.vercel.app/',
-    'http://localhost:5173'
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://your-frontend-domain.com']
+    : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
-  optionsSuccessStatus: 200
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.options('*', cors());
@@ -49,6 +47,7 @@ app.use((err, req, res, next) => {
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 // Update the CORS configuration
 
 app.get('/', (req, res) => {
