@@ -13,17 +13,17 @@ import type {
 } from '../types';
 
 // API Base URL
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://ms-ecommerce-production.up.railway.app/api'
-  : 'http://localhost:8000';
+const API_URL = 'https://ms-ecommerce-production.up.railway.app/api';
+
 
 // Axios Instance
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   },
-  withCredentials: true
+  withCredentials: false
 });
 
 // Debug Interceptors
