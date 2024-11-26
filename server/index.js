@@ -29,7 +29,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors({
   origin: [
-    'https://ms-ecommerce-qau0spbsw-mujtabaa07s-projects.vercel.app/',
+    'https://ms-ecommerce-git-main-mujtabaa07s-projects.vercel.app/',
     'http://localhost:5173'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -38,6 +38,14 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 
+app.options('*', cors());
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal Server Error',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
 
 // Middleware
 app.use(express.json());

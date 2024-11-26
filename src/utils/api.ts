@@ -49,6 +49,20 @@ axiosInstance.interceptors.response.use(
     });
   }
 );
+axiosInstance.interceptors.request.use(
+  (config) => {
+    console.log('Request:', {
+      method: config.method,
+      url: config.url,
+      data: config.data
+    });
+    return config;
+  },
+  (error) => {
+    console.error('Request Error:', error);
+    return Promise.reject(error);
+  }
+);
 
 // Products API
 export const products = {
