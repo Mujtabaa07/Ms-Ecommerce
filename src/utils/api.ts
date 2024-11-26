@@ -162,8 +162,13 @@ export const auth = {
   },
 
   register: async (userData: RegisterFormData) => {
-    const response = await axiosInstance.post('/api/auth/register', userData);
-    return response.data;
+    try {
+      const { data } = await axiosInstance.post('/api/auth/register', userData);
+      return data;
+    } catch (error) {
+      console.error('Register error:', error);
+      throw error;
+    }
   },
 
   getProfile: async () => {
