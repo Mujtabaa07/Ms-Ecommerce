@@ -13,7 +13,7 @@ import type {
 } from '../types';
 
 // API Base URL
-const API_URL = 'https://ms-ecommerce-production.up.railway.app/api';
+const API_URL = 'https://ms-ecommerce-production.up.railway.app';
 
 
 // Axios Instance
@@ -23,7 +23,7 @@ const axiosInstance: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  withCredentials: false
+  
 });
 
 // Debug Interceptors
@@ -166,7 +166,7 @@ export const orders = {
 export const auth = {
   login: async (credentials: LoginFormData) => {
     try {
-      const response = await axiosInstance.post('/auth/login', credentials);
+      const response = await axiosInstance.post('/api/auth/login', credentials);
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
       }
@@ -179,7 +179,7 @@ export const auth = {
 
   register: async (userData: RegisterFormData) => {
     try {
-      const { data } = await axiosInstance.post('/auth/register', userData);
+      const { data } = await axiosInstance.post('/api/auth/register', userData);
       return data;
     } catch (error) {
       console.error('Register error:', error);
