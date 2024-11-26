@@ -1,36 +1,28 @@
 import Product from '../models/Product.js';
 import { ApiError } from '../utils/ApiError.js';
 
+
 // Create new product
 export const createProduct = async (req, res, next) => {
   try {
     const { name, description, price, category, stock } = req.body;
     
-    // Validate required fields
-    if (!name || !description || !price || !category || !stock) {
-      throw new ApiError(400, 'Please provide all required fields');
-    }
-
-    // Handle image upload
     if (!req.file) {
       throw new ApiError(400, 'Product image is required');
     }
 
-    // Create image URL
-    const image = `/uploads/${req.file.filename}`;
+    const result = await cloudinary.uploader.upload(req.file.path);
 
-    // Create product
     const product = await Product.create({
       name,
       description,
       price: Number(price),
       category,
       stock: Number(stock),
-      image,
+      image: result.secure_url,
       seller: req.user._id
     });
 
-    // Populate seller details
     await product.populate('seller', 'name email');
 
     res.status(201).json({
@@ -110,32 +102,24 @@ export const updateProduct = async (req, res, next) => {
       throw new ApiError(404, 'Product not found');
     }
 
-    // Check ownership
     if (product.seller.toString() !== req.user._id.toString()) {
       throw new ApiError(403, 'Not authorized to update this product');
     }
 
-    // Handle image upload
     let image = product.image;
     if (req.file) {
-      image = `/uploads/${req.file.filename}`;
+      const result = await cloudinary.uploader.upload(req.file.path);
+      image = result.secure_url;
     }
 
-    // Update product
-    const updates = { ...req.body };
+    const updates = { ...req.body, image };
     if (updates.price) updates.price = Number(updates.price);
     if (updates.stock) updates.stock = Number(updates.stock);
 
     product = await Product.findByIdAndUpdate(
       req.params.id,
-      {
-        ...updates,
-        image
-      },
-      {
-        new: true,
-        runValidators: true
-      }
+      updates,
+      { new: true, runValidators: true }
     ).populate('seller', 'name email');
 
     res.json({

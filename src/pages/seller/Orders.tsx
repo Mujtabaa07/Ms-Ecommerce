@@ -15,6 +15,7 @@ import {
   Clock
 } from 'lucide-react';
 import api from '../../utils/api';
+import { Image } from '../../components/ui/image';
 
 interface OrderItem {
   _id: string | number | null | undefined;
@@ -206,14 +207,10 @@ export const SellerOrders: React.FC = () => {
                 <div className="border-t border-b py-4 my-4">
                   {order.items.map((item) => (
                     <div key={item._id} className="flex items-center space-x-4 py-2">
-                      <img
+                      <Image
                         src={item.product.image}
                         alt={item.product.name}
-                        className="w-16 h-16 object-cover rounded"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder-image.jpg';
-                        }}
+                        className="w-16 h-16 rounded"
                       />
                       <div className="flex-1">
                         <h4 className="font-medium">{item.product.name}</h4>

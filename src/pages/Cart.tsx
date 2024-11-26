@@ -4,6 +4,7 @@ import { useCartStore } from '../store/useCartStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { Button } from '../components/ui/Button';
 import { ShoppingCart, Trash2, Minus, Plus } from 'lucide-react';
+import { Image } from '../components/ui/image';
 
 export const Cart: React.FC = () => {
   const navigate = useNavigate();
@@ -58,14 +59,10 @@ export const Cart: React.FC = () => {
               className="bg-white rounded-lg shadow p-4 flex items-center gap-4"
             >
               {/* Product Image */}
-              <img
+              <Image
                 src={item.product.image}
                 alt={item.product.name}
                 className="w-24 h-24 object-cover rounded"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder-image.jpg';
-                }}
               />
               
               {/* Product Details */}

@@ -5,6 +5,7 @@ import { useCartStore } from '../../store/useCartStore';
 import { Button } from '../../components/ui/Button';
 import { toast } from 'react-hot-toast';
 import { ShoppingCart } from 'lucide-react';
+import { Image } from '../ui/image';
 
 interface Product {
   image: string;
@@ -80,17 +81,11 @@ export const ProductDetail: React.FC = () => {
       </button>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-        <img
-  src={product.data.image}  // Changed from imageUrl to image
-  alt={product.data.name}
-  className="w-full h-96 object-cover rounded-lg"
-  onError={(e) => {
-    const target = e.target as HTMLImageElement;
-    target.src = '/placeholder-image.jpg';
-  }}
-/>
-        </div>
+        <Image
+          src={product.data.image}
+          alt={product.data.name}
+          className="w-full h-96 rounded-lg"
+        />
 
         <div>
           <h1 className="text-3xl font-bold mb-4">{product.data.name}</h1>

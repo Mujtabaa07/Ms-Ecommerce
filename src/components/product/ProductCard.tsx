@@ -7,6 +7,7 @@ import { ShoppingCart, Star } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { formatPrice } from '../../lib/utils';
 import { toast } from 'react-hot-toast';
+import { Image } from '../ui/image';
 
 interface ProductCardProps {
   product: Product;
@@ -52,15 +53,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         to={`/products/${product._id}`}
         className="block relative h-48 overflow-hidden"
       >
-       <img
-  src={product.image}  // Changed from imageUrl to image
-  alt={product.name}
-  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-  onError={(e) => {
-    const target = e.target as HTMLImageElement;
-    target.src = '/placeholder-product.jpg';
-  }}
-/>
+        <Image
+          src={product.image}
+          alt={product.name}
+          className="w-full h-48"
+        />
         {product.stock <= 0 && (
           <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
             Out of Stock

@@ -7,6 +7,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { toast } from 'react-hot-toast';
 import { Order } from '../types';
 import api from '../utils/api';
+import { Image } from '../components/ui/image';
 
 export const Orders: React.FC = () => {
   const navigate = useNavigate();
@@ -114,14 +115,10 @@ export const Orders: React.FC = () => {
                 {order.items.map((item) => (
                   <div key={item._id} className="flex justify-between items-center py-2">
                     <div className="flex items-center space-x-4">
-                      <img
+                      <Image
                         src={item.product.image}
                         alt={item.product.name}
-                        className="w-16 h-16 object-cover rounded"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder-product.jpg';
-                        }}
+                        className="w-16 h-16 rounded"
                       />
                       <div>
                         <h4 className="font-medium">{item.product.name}</h4>

@@ -44,7 +44,7 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Static files
-app.use('/uploads', express.static(uploadsDir));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);

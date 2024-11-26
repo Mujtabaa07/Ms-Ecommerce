@@ -6,6 +6,7 @@ import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
+import { Image } from '../../components/ui/image';
 
 interface Product {
   _id: string;
@@ -74,26 +75,42 @@ export const SellerProducts: React.FC = () => {
     }
   });
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      price: 0,
+      category: '',
+      stock: 0
+    });
+    setImagePreview('');
+    setEditingProduct(null);
+  };
+
   // Create product mutation
   const createProductMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await fetch('http://localhost:8000/api/products', {
+      const response = await fetch('http://localhost:8000/api/seller/products', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: data
       });
-      if (!response.ok) throw new Error('Failed to create product');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create product');
+      }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sellerProducts'] });
       toast.success('Product created successfully');
-      handleCloseModal();
+      setIsModalOpen(false);
+      resetForm();
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to create product');
+    onError: (error: Error) => {
+      toast.error(error.message);
     }
   });
 
@@ -144,8 +161,23 @@ export const SellerProducts: React.FC = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      if (!file.type.match(/^image\/(jpeg|png|gif|jpg)$/)) {
+        toast.error('Please upload a valid image file (JPEG, PNG, or GIF)');
+        return;
+      }
+      
+      // Validate file size (e.g., max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+
       setFormData(prev => ({ ...prev, image: file }));
-      setImagePreview(URL.createObjectURL(file));
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      
+      return () => URL.revokeObjectURL(previewUrl);
     }
   };
 
@@ -246,14 +278,10 @@ export const SellerProducts: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {filteredProducts?.map((product) => (
             <div key={product._id} className="bg-white rounded-lg shadow overflow-hidden">
-              <img
-                src={product.image || '/placeholder-image.jpg'}
+              <Image
+                src={product.image}
                 alt={product.name}
-                className="w-full h-48 object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder-image.jpg';
-                }}
+                className="w-full h-48 object-cover rounded-t-lg"
               />
               <div className="p-4">
                 <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
@@ -362,21 +390,19 @@ export const SellerProducts: React.FC = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Image</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="mt-1 block w-full"
-                />
+              <div className="mb-4">
                 {imagePreview && (
-                  <img
+                  <Image
                     src={imagePreview}
-                    alt="Preview"
-                    className="mt-2 h-32 w-32 object-cover rounded"
+                    alt="Product preview"
+                    className="w-32 h-32 rounded"
                   />
                 )}
+                <input
+                  type="file"
+                  onChange={handleImageChange}
+                  accept="image/*"
+                />
               </div>
 
               <div className="flex justify-end space-x-4">
