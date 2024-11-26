@@ -12,9 +12,18 @@ import {
   ShippingAddress
 } from '../types';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+export const apiConfig = {
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+};
+
 // Create axios instance with default config
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json'
   },
@@ -211,9 +220,8 @@ export const auth = {
     return data;
   },
 };
-
 // Export default API object
-const api = {
+export const api = {
   axiosInstance,
   products,
   orders,
