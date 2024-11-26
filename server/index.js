@@ -30,7 +30,11 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 // Update the CORS configuration
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://ms-ecommerce-sigma.vercel.app/'],
+  origin: [
+    'http://localhost:5173',
+    'https://ms-ecommerce-sigma.vercel.app/', // Add your frontend URL
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
   credentials: true
 }));
 
@@ -94,15 +98,24 @@ const connectDB = async () => {
 connectDB();
 
 // Server initialization
-if (process.env.NODE_ENV !== 'test') {
+const startServer = async () => {
   try {
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+    const server = app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      server.close(() => {
+        mongoose.connection.close();
+        process.exit(0);
+      });
     });
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
   }
-}
+};
 
+startServer();
 export { app };

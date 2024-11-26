@@ -31,25 +31,16 @@ const axiosInstance: AxiosInstance = axios.create({
 });
 
 // Add better error handling and logging
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    console.log('🚀 Request:', {
-      method: config.method,
-      url: config.url,
-      data: config.data
-    });
-    return config;
-  },
+axiosInstance.interceptors.response.use(
+  (response) => response,
   (error) => {
-    console.error('❌ Request Error:', error);
+    console.error('API Error:', {
+      status: error.response?.status,
+      message: error.response?.data?.message || error.message
+    });
     return Promise.reject(error);
   }
 );
-
 axiosInstance.interceptors.response.use(
   (response) => {
     console.log('✅ Response:', {
