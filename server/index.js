@@ -20,10 +20,7 @@ const envPath = process.env.NODE_ENV === 'test'
   ? path.join(__dirname, 'config', '.env.test')
   : path.join(__dirname, 'config', '.env');
   
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'https://ms-ecommerce-sigma.vercel.app'
-  ];
+  
 
 // Load environment variables
 dotenv.config({ path: envPath });
@@ -32,7 +29,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors({
   origin: [
-    'https://ms-ecommerce-sigma.vercel.app',
+    'https://ms-ecommerce-theta.vercel.app/',
     'http://localhost:5173'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
