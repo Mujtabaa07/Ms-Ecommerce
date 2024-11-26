@@ -28,22 +28,19 @@ const envPath = process.env.NODE_ENV === 'test'
 // Load environment variables
 dotenv.config({ path: envPath });
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      return callback(new Error('CORS not allowed'));
-    }
-    return callback(null, true);
-  },
+  origin: [
+    'https://ms-ecommerce-sigma.vercel.app',
+    'http://localhost:5173'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
+  optionsSuccessStatus: 200
 }));
 
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());

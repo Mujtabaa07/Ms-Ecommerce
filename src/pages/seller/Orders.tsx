@@ -127,7 +127,7 @@ export const SellerOrders: React.FC = () => {
     }
   };
 
-  const filteredOrders = orders?.data.filter((order) => {
+  const filteredOrders = orders?.data.filter((order: Order) => {
     const matchesSearch = 
       ((order._id?.toString() || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
       order.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -184,13 +184,13 @@ export const SellerOrders: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredOrders?.map((order) => (
+          {filteredOrders?.map((order: Order) => (
             <div key={order._id} className="bg-white rounded-lg shadow overflow-hidden">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="font-semibold text-lg">
-                      Order #{order._id.slice(-8).toUpperCase()}
+                      Order #{order._id?.toString().slice(-8).toUpperCase() ?? 'N/A'}
                     </h3>
                     <p className="text-sm text-gray-500">
                       Placed on {format(new Date(order.createdAt), 'PPP')}
@@ -253,7 +253,7 @@ export const SellerOrders: React.FC = () => {
                     <div className="space-x-2">
                       {order.status === 'pending' && (
                         <Button
-                          onClick={() => handleStatusUpdate(order._id, 'processing')}
+                          onClick={() => handleStatusUpdate(order._id?.toString() || '', 'processing')}
                           disabled={updateOrderStatusMutation.isPending}
                         >
                           Process Order
@@ -261,7 +261,7 @@ export const SellerOrders: React.FC = () => {
                       )}
                       {order.status === 'processing' && (
                         <Button
-                          onClick={() => handleStatusUpdate(order._id, 'shipped')}
+                          onClick={() => handleStatusUpdate(order._id?.toString() || '', 'shipped')}
                           disabled={updateOrderStatusMutation.isPending}
                         >
                           Mark as Shipped
@@ -269,7 +269,7 @@ export const SellerOrders: React.FC = () => {
                       )}
                       {order.status === 'shipped' && (
                         <Button
-                          onClick={() => handleStatusUpdate(order._id, 'delivered')}
+                          onClick={() => handleStatusUpdate(order._id?.toString() || '', 'delivered')}
                           disabled={updateOrderStatusMutation.isPending}
                         >
                           Mark as Delivered

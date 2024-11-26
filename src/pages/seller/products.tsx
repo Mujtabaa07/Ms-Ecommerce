@@ -234,7 +234,7 @@ export const SellerProducts: React.FC = () => {
     setImagePreview('');
   };
 
-  const filteredProducts = products?.data?.filter((product: { name: string; category: string; }) =>
+  const filteredProducts = products?.filter((product: Product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
