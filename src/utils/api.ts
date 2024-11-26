@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios from 'axios';
 import type { 
   Product,
   LoginFormData, 
@@ -17,7 +17,7 @@ const API_URL = 'https://ms-ecommerce-production.up.railway.app';
 
 
 // Axios Instance
-const axiosInstance: AxiosInstance = axios.create({
+const axiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
