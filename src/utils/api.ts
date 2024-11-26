@@ -14,7 +14,7 @@ import type {
 
 // API Base URL
 const API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://ms-ecommerce-production.up.railway.app'
+  ? 'https://ms-ecommerce-production.up.railway.app/api'
   : 'http://localhost:8000';
 
 // Axios Instance
@@ -166,7 +166,7 @@ export const orders = {
 export const auth = {
   login: async (credentials: LoginFormData) => {
     try {
-      const response = await axiosInstance.post('/api/auth/login', credentials);
+      const response = await axiosInstance.post('/auth/login', credentials);
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
       }
@@ -179,7 +179,7 @@ export const auth = {
 
   register: async (userData: RegisterFormData) => {
     try {
-      const { data } = await axiosInstance.post('/api/auth/register', userData);
+      const { data } = await axiosInstance.post('/auth/register', userData);
       return data;
     } catch (error) {
       console.error('Register error:', error);
