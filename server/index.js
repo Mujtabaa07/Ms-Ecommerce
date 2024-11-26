@@ -29,7 +29,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors({
   origin: [
-    'https://ms-ecommerce-theta.vercel.app/',
+    'https://ms-ecommerce-qau0spbsw-mujtabaa07s-projects.vercel.app/',
     'http://localhost:5173'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
