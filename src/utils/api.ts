@@ -25,6 +25,19 @@ const axiosInstance = axios.create({
   
 });
 
+// Add request interceptor to axiosInstance instead of undefined api
+axiosInstance.interceptors.request.use(
+  (config: any) => {
+    console.log('API Request:', {
+      method: config.method,
+      url: config.baseURL + config.url,
+      data: config.data,
+    });
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Debug Interceptors
 axiosInstance.interceptors.request.use(request => {
   console.log('Starting Request:', request.url);

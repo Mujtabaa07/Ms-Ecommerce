@@ -26,10 +26,12 @@ export const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setServerError(null);
+    setIsLoading(true);
 
     // Validate form data
     if (!formData.name.trim()) {
       setServerError('Name is required');
+      setIsLoading(false);
       return;
     }
 
@@ -37,12 +39,14 @@ export const Register: React.FC = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setServerError('Please enter a valid email address');
+      setIsLoading(false);
       return;
     }
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setServerError('Passwords do not match');
+      setIsLoading(false);
       return;
     }
 
@@ -61,7 +65,7 @@ export const Register: React.FC = () => {
           user: response.data.user 
         });
         toast.success('Registration successful');
-        navigate('/');
+        navigate('/login');
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || 'Registration failed';
