@@ -31,13 +31,13 @@ app.use(express.json());
 // Update the CORS configuration
 app.use(cors({
   origin: [
-    'http://localhost:5173',
-    'https://ms-ecommerce-sigma.vercel.app/', // Add your frontend URL
-    process.env.FRONTEND_URL
-  ].filter(Boolean),
-  credentials: true
+    'https://ms-ecommerce-sigma.vercel.app',  // Your Vercel frontend URL
+    'http://localhost:5173',                   // Local development
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
 app.get('/', (req, res) => {
   res.send('Server is running!');
 });
