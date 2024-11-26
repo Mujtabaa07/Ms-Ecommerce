@@ -23,7 +23,7 @@ export const apiConfig = {
 
 // Create axios instance with default config
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: API_URL,
+  baseURL: `${API_URL}/api`,  // Add /api prefix
   headers: {
     'Content-Type': 'application/json'
   },

@@ -24,15 +24,19 @@ const envPath = process.env.NODE_ENV === 'test'
 dotenv.config({ path: envPath });
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(express.json());
 // Update the CORS configuration
 app.use(cors({
   origin: ['http://localhost:5173', 'https://ms-ecommerce-sigma.vercel.app/'],
   credentials: true
 }));
-app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.send('Server is running!');
+});
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -42,6 +46,8 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/auth', authRoutes);  // Add /api prefix to match frontend requests
+
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -63,9 +69,7 @@ app.use((err, req, res, next) => {
 });
 
 // Add a health check endpoint
-app.get('/', (req, res) => {
-  res.send('Server is running!');
-});
+
 
 // Database connection
 const MONGODB_URI = process.env.NODE_ENV === 'test' 
