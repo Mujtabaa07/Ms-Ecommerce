@@ -68,14 +68,23 @@ export const SellerProducts: React.FC = () => {
   }
 
   // Fetch products
-  const { data: productsData ,isLoading} = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['sellerProducts'],
     queryFn: async () => {
-      const response = await api.products.getAll();
-      return Array.isArray(response) ? response : [];
+      try {
+        const response = await api.products.getAll();
+        // Handle potential response structures
+        if (response) {
+          return Array.isArray(response) ? response : [];
+        }
+        return Array.isArray(response) ? response : [];
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        return [];
+      }
     }
   });
-  const products = productsData || [];
+  const products = data || [];
 
   const resetForm = () => {
     setFormData({
