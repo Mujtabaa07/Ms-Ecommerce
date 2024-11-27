@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { Image } from '../../components/ui/image';
 
+
 interface Product {
   _id: string;
   name: string;
@@ -67,13 +68,14 @@ export const SellerProducts: React.FC = () => {
   }
 
   // Fetch products
-  const { data: products = [], isLoading } = useQuery({
+  const { data: productsData ,isLoading} = useQuery({
     queryKey: ['sellerProducts'],
     queryFn: async () => {
       const response = await api.products.getAll();
-      return response;
+      return Array.isArray(response) ? response : [];
     }
   });
+  const products = productsData || [];
 
   const resetForm = () => {
     setFormData({
@@ -250,7 +252,7 @@ export const SellerProducts: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {filteredProducts?.map((product: Product) => (
+          {filteredProducts.map((product: Product) => (
             <div key={product._id} className="bg-white rounded-lg shadow overflow-hidden">
               <Image
                 src={product.image}

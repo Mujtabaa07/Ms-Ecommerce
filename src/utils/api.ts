@@ -24,17 +24,13 @@ const api = axios.create({
   }
 });
 // Add request interceptor to axiosInstance instead of undefined api
-api.interceptors.request.use(
-  (config: any) => {
-    console.log('API Request:', {
-      method: config.method,
-      url: config.baseURL + config.url,
-      data: config.data,
-    });
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 // Debug Interceptors
 api.interceptors.request.use(request => {
