@@ -13,22 +13,18 @@ import type {
 } from '../types';
 
 
-const baseURL = process.env.NODE_ENV === 'production' 
+const baseURL = import.meta.env.PROD 
   ? 'https://ms-ecommerce-production.up.railway.app'
   : 'http://localhost:8000';
-
 // Axios Instance
-const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || baseURL,
+const api = axios.create({
+  baseURL,
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  },
-  
+    'Content-Type': 'application/json'
+  }
 });
-
 // Add request interceptor to axiosInstance instead of undefined api
-axiosInstance.interceptors.request.use(
+api.interceptors.request.use(
   (config: any) => {
     console.log('API Request:', {
       method: config.method,
@@ -41,7 +37,7 @@ axiosInstance.interceptors.request.use(
 );
 
 // Debug Interceptors
-axiosInstance.interceptors.request.use(request => {
+api.interceptors.request.use(request => {
   console.log('Starting Request:', request.url);
   const token = localStorage.getItem('token');
   if (token) {
@@ -50,7 +46,7 @@ axiosInstance.interceptors.request.use(request => {
   return request;
 });
 
-axiosInstance.interceptors.response.use(
+api.interceptors.response.use(
   response => response,
   error => {
     console.error('API Error:', {
@@ -65,7 +61,7 @@ axiosInstance.interceptors.response.use(
     });
   }
 );
-axiosInstance.interceptors.request.use(
+api.interceptors.request.use(
   (config) => {
     console.log('Request:', {
       method: config.method,
@@ -84,7 +80,7 @@ axiosInstance.interceptors.request.use(
 export const products = {
   getAll: async (params?: ProductFilters): Promise<Product[]> => {
     try {
-      const { data } = await axiosInstance.get('/api/products', { params });
+      const { data } = await api.get('/api/products', { params });
       return data;
     } catch (error) {
       console.error('Get products error:', error);
@@ -93,29 +89,29 @@ export const products = {
   },
 
   getOne: async (id: string) => {
-    const { data } = await axiosInstance.get(`/api/products/${id}`);
+    const { data } = await api.get(`/api/products/${id}`);
     return data;
   },
 
   create: async (formData: FormData) => {
-    const { data } = await axiosInstance.post('/api/products', formData);
+    const { data } = await api.post('/api/products', formData);
     return data;
   },
 
   update: async (id: string, formData: FormData) => {
-    const { data } = await axiosInstance.put(`/seller/products/${id}`, formData, {
+    const { data } = await api.put(`/seller/products/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data;
   },
 
   delete: async (id: string) => {
-    const { data } = await axiosInstance.delete(`/seller/products/${id}`);
+    const { data } = await api.delete(`/seller/products/${id}`);
     return data;
   },
 
   search: async (params: ProductFilters) => {
-    const { data } = await axiosInstance.get('/products/search', { params });
+    const { data } = await api.get('/products/search', { params });
     return data;
   },
 };
@@ -123,22 +119,22 @@ export const products = {
 // Seller API
 export const seller = {
   getProducts: async () => {
-    const { data } = await axiosInstance.get('/seller/products');
+    const { data } = await api.get('/seller/products');
     return data;
   },
 
   getDashboard: async (): Promise<DashboardStats> => {
-    const response = await axiosInstance.get<{ data: DashboardStats }>('/api/seller/dashboard');
+    const response = await api.get<{ data: DashboardStats }>('/api/seller/dashboard');
     return response.data.data;
   },
 
   getOrders: async () => {
-    const response = await axiosInstance.get('/seller/orders');
+    const response = await api.get('/seller/orders');
     return response.data;
   },
 
   updateOrderStatus: async (orderId: string, status: Order['status']) => {
-    const response = await axiosInstance.patch(`/seller/orders/${orderId}/status`, { status });
+    const response = await api.patch(`/seller/orders/${orderId}/status`, { status });
     return response.data;
   }
 };
@@ -146,32 +142,32 @@ export const seller = {
 // Orders API
 export const orders = {
   create: async (orderData: { items: OrderItem[], shippingAddress: ShippingAddress }) => {
-    const response = await axiosInstance.post('/orders', orderData);
+    const response = await api.post('/orders', orderData);
     return response.data;
   },
 
   getAll: async () => {
-    const response = await axiosInstance.get('/orders');
+    const response = await api.get('/orders');
     return response.data;
   },
 
   getById: async (id: string) => {
-    const response = await axiosInstance.get(`/orders/${id}`);
+    const response = await api.get(`/orders/${id}`);
     return response.data;
   },
 
   cancel: async (orderId: string) => {
-    const response = await axiosInstance.post(`/orders/${orderId}/cancel`);
+    const response = await api.post(`/orders/${orderId}/cancel`);
     return response.data;
   },
 
   getSellerOrders: async () => {
-    const response = await axiosInstance.get('/seller/orders');
+    const response = await api.get('/seller/orders');
     return response.data;
   },
 
   updateOrderStatus: async (orderId: string, status: Order['status']) => {
-    const response = await axiosInstance.patch(`/seller/orders/${orderId}/status`, { status });
+    const response = await api.patch(`/seller/orders/${orderId}/status`, { status });
     return response.data;
   }
 };
@@ -180,7 +176,7 @@ export const orders = {
 export const auth = {
   login: async (credentials: LoginFormData) => {
     try {
-      const response = await axiosInstance.post('/api/auth/login', credentials);
+      const response = await api.post('/api/auth/login', credentials);
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
       }
@@ -193,7 +189,7 @@ export const auth = {
 
   register: async (userData: RegisterFormData) => {
     try {
-      const response = await axiosInstance.post('/api/auth/register', userData);
+      const response = await api.post('/api/auth/register', userData);
       return response.data;
     } catch (error) {
       console.error('Register error:', error);
@@ -202,28 +198,28 @@ export const auth = {
   },
 
   getProfile: async () => {
-    const { data } = await axiosInstance.get('/api/auth/profile');
+    const { data } = await api.get('/api/auth/profile');
     return data;
   },
 
   updateProfile: async (profileData: ProfileUpdateData) => {
-    const { data } = await axiosInstance.put('/auth/profile', profileData);
+    const { data } = await api.put('/auth/profile', profileData);
     return data;
   },
 
   changePassword: async (passwordData: PasswordChangeData) => {
-    const { data } = await axiosInstance.put('/auth/change-password', passwordData);
+    const { data } = await api.put('/auth/change-password', passwordData);
     return data;
   },
 };
 
 // Export default API object
-export const api = {
-  axiosInstance,
+export const apiClient = {
+  api,
   products,
   orders,
   seller,
   auth,
 };
 
-export default api;
+export default apiClient;
