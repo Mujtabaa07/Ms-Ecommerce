@@ -55,7 +55,7 @@ export const Home: React.FC = () => {
   }
 
   // Get products array safely
-  const products = Array.isArray(data?.data) ? data.data : [];
+  const products = Array.isArray(data) ? data : [];
 
   // Empty state
   if (products.length === 0) {

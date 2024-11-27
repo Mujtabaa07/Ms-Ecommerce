@@ -15,7 +15,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 // API function to get seller stats
 const getSellerStats = async () => {
-  const response = await fetch('http://localhost:8000/api/seller/dashboard', {
+  const response = await fetch('https://ms-ecommerce-production.up.railway.app/api/seller/dashboard', {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     }

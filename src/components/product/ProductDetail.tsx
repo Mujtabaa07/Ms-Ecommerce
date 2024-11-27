@@ -35,7 +35,7 @@ export const ProductDetail: React.FC = () => {
   const { data: product, isLoading } = useQuery<{ data: Product }>({
     queryKey: ['product', id],
     queryFn: async () => {
-      const response = await fetch(`http://localhost:8000/api/products/${id}`);
+      const response = await fetch(`https://ms-ecommerce-production.up.railway.app/api/products/${id}`);
       if (!response.ok) throw new Error('Failed to fetch product');
       return response.json();
     },

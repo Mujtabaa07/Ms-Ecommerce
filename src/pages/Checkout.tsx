@@ -49,7 +49,7 @@ export const Checkout: React.FC = () => {
         paymentMethod: 'COD'
       };
 
-      const response = await orders.axiosInstance.post('/orders', orderData);
+      const response = await orders.api.post('/orders', orderData);
       return response.data;
     },
     onSuccess: () => {

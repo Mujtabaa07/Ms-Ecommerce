@@ -90,7 +90,7 @@ export const SellerProducts: React.FC = () => {
   // Create product mutation
   const createProductMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await fetch('http://localhost:8000/api/seller/products', {
+      const response = await fetch('https://ms-ecommerce-production.up.railway.app/api/seller/products', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -117,7 +117,7 @@ export const SellerProducts: React.FC = () => {
   // Update product mutation
   const updateProductMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: FormData }) => {
-      const response = await fetch(`http://localhost:8000/api/seller/products/${id}`, {
+      const response = await fetch(`https://ms-ecommerce-production.up.railway.app/api/seller/products/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -140,7 +140,7 @@ export const SellerProducts: React.FC = () => {
   // Delete product mutation
   const deleteProductMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`http://localhost:8000/api/seller/products/${id}`, {
+      const response = await fetch(`https://ms-ecommerce-production.up.railway.app/api/seller/products/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
