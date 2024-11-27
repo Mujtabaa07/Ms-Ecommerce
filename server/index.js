@@ -26,14 +26,23 @@ const envPath = process.env.NODE_ENV === 'test'
 dotenv.config({ path: envPath });
 const app = express();
 const PORT = process.env.PORT || 3000;
+const allowedOrigins = [
+  'https://ms-ecommerce-theta.vercel.app',
+  'http://localhost:5173'
+];
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? ['https://ms-ecommerce-theta.vercel.app/']
-    : ['http://localhost:5173'],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
 }));
 
 app.options('*', cors());
