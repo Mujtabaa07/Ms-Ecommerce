@@ -67,7 +67,7 @@ export const SellerProducts: React.FC = () => {
   }
 
   // Fetch products
-  const { data: products, isLoading } = useQuery({
+  const { data: products = [], isLoading } = useQuery({
     queryKey: ['sellerProducts'],
     queryFn: async () => {
       const response = await api.products.getAll();
@@ -90,18 +90,7 @@ export const SellerProducts: React.FC = () => {
   // Create product mutation
   const createProductMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await fetch('https://ms-ecommerce-production.up.railway.app/api/seller/products', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: data
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create product');
-      }
-      return response.json();
+      return await api.products.create(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sellerProducts'] });
@@ -117,22 +106,15 @@ export const SellerProducts: React.FC = () => {
   // Update product mutation
   const updateProductMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: FormData }) => {
-      const response = await fetch(`https://ms-ecommerce-production.up.railway.app/api/seller/products/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: data
-      });
-      if (!response.ok) throw new Error('Failed to update product');
-      return response.json();
+      return await api.products.update(id, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sellerProducts'] });
       toast.success('Product updated successfully');
-      handleCloseModal();
+      setIsModalOpen(false);
+      resetForm();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to update product');
     }
   });
@@ -140,20 +122,13 @@ export const SellerProducts: React.FC = () => {
   // Delete product mutation
   const deleteProductMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`https://ms-ecommerce-production.up.railway.app/api/seller/products/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to delete product');
-      return response.json();
+      return await api.products.delete(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sellerProducts'] });
       toast.success('Product deleted successfully');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to delete product');
     }
   });
@@ -234,9 +209,8 @@ export const SellerProducts: React.FC = () => {
     setImagePreview('');
   };
 
-  const filteredProducts = products?.filter((product: Product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = products.filter((product: Product) => 
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
