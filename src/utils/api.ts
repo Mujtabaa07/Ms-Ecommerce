@@ -13,11 +13,13 @@ import type {
 } from '../types';
 
 
-
+const baseURL = process.env.NODE_ENV === 'production' 
+  ? 'https://ms-ecommerce-production.up.railway.app'
+  : 'http://localhost:8000';
 
 // Axios Instance
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL || baseURL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
