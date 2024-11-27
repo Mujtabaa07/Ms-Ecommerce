@@ -169,24 +169,45 @@ export const SellerProducts: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formDataToSend = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === 'image' && value instanceof File) {
-        formDataToSend.append('image', value);
-      } else {
-        formDataToSend.append(key, String(value));
-      }
-    });
 
-    if (editingProduct) {
-      updateProductMutation.mutate({ 
-        id: editingProduct._id, 
-        data: formDataToSend 
-      });
-    } else {
-      createProductMutation.mutate(formDataToSend);
-    }
-  };
+    const formDataToSend = new FormData();
+    formDataToSend.append('name', formData.name);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('price', formData.price.toString());
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('stock', formData.stock.toString());
+    const imageInput = document.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!imageInput?.files?.[0]) {
+    toast.error('Please select a product image');
+    return;
+  }
+  formDataToSend.append('image', imageInput.files[0]);
+  
+  try {
+    await createProductMutation.mutateAsync(formDataToSend);
+  } catch (error) {
+    console.error('Error creating product:', error);
+  }
+};
+  
+  //   const formDataToSend = new FormData();
+  //   Object.entries(formData).forEach(([key, value]) => {
+  //     if (key === 'image' && value instanceof File) {
+  //       formDataToSend.append('image', value);
+  //     } else {
+  //       formDataToSend.append(key, String(value));
+  //     }
+  //   });
+
+  //   if (editingProduct) {
+  //     updateProductMutation.mutate({ 
+  //       id: editingProduct._id, 
+  //       data: formDataToSend 
+  //     });
+  //   } else {
+  //     createProductMutation.mutate(formDataToSend);
+  //   }
+  // };
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
